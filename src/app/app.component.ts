@@ -16,6 +16,7 @@ export class AppComponent implements OnInit {
   gridInfo: GridInfo;
   startCell: Cell;
   hidokuGrid: Cell[][] = [];
+  processGrid: Cell[][] = [];
 
   constructor(
     fb: FormBuilder,
@@ -58,6 +59,9 @@ export class AppComponent implements OnInit {
       dificulty: this.form.value.dificulty,
     });
 
+    const startTime = new Date().getTime();
+    console.time('generateHidoku');
+
     // Generates a matrix
     this.generateGrid();
 
@@ -67,9 +71,12 @@ export class AppComponent implements OnInit {
     // Hides cells based on dificulty
     this.setDifficulty();
 
+    this.hidokuGrid = this.processGrid;
+
     console.log('====================================');
-    console.log('Finish');
+    console.timeEnd('generateHidoku');
     console.log('====================================');
+
     this._loadingService.resolveAll('overlayStarSyntax');
   }
 
@@ -79,11 +86,11 @@ export class AppComponent implements OnInit {
    * @memberof AppComponent
    */
   generateGrid() {
-    this.hidokuGrid = [];
+    this.processGrid = [];
     for (let row = 0; row <= this.gridInfo.rows; row++) {
-      this.hidokuGrid[row] = [];
+      this.processGrid[row] = [];
       for (let col = 0; col <= this.gridInfo.cols; col++) {
-        this.hidokuGrid[row][col] = new Cell(row, col);
+        this.processGrid[row][col] = new Cell(row, col);
       }
     }
   }
@@ -100,7 +107,7 @@ export class AppComponent implements OnInit {
     const randomRow = Math.round(Math.random() * this.gridInfo.rows);
 
     // Get starting cell
-    this.startCell = this.hidokuGrid[randomRow][randomCol];
+    this.startCell = this.processGrid[randomRow][randomCol];
 
     // Initialize starting cell
     this.startCell.value = 1;
@@ -123,7 +130,7 @@ export class AppComponent implements OnInit {
       const moveIndex = Math.round(Math.random() * (movesAllowed.length - 1));
       const allowedMove = movesAllowed.splice(moveIndex, 1)[0];
       const dir = this.calculateMoveIndex(cell, allowedMove);
-      const cellMove = this.hidokuGrid[dir.row][dir.col];
+      const cellMove = this.processGrid[dir.row][dir.col];
       cellMove.value = cell.value + 1;
       if (this.recursiveMove(cellMove)) {
         cell.showValue();
@@ -165,7 +172,7 @@ export class AppComponent implements OnInit {
       ) continue;
 
       // Check move cell is empty
-      const cellMove = this.hidokuGrid[dir.row][dir.col];
+      const cellMove = this.processGrid[dir.row][dir.col];
       if (cellMove.value !== 0) continue;
 
       allowedMoves.push(move);
