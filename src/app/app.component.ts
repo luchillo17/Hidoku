@@ -73,11 +73,73 @@ export class AppComponent {
     }
   }
 
-  generateSolution(gridInfo: GridInfo) {
+    /**
+     * Backtracking part of the app, generates the
+     * hidoku values for a valid solution.
+     *
+     * @memberof AppComponent
+     */
+  generateSolution() {
+    // Get random starting cell positions
+    const randomCol = Math.round(Math.random() * this.gridInfo.cols);
+    const randomRow = Math.round(Math.random() * this.gridInfo.rows);
+
+    // Get starting cell
+    this.startCell = this.hidokuGrid[randomRow][randomCol];
+
+    // Initialize starting cell
+    this.startCell.value = 1;
+    this.startCell.isEdge = true;
+    this.startCell.showValue();
+
+    console.log('====================================');
+    console.log('Moves: ', allowedBaseMoves);
+    console.log('====================================');
+
 
   }
 
-  setDifficulty(gridInfo: GridInfo) {
 
+
+  /**
+   * Hides some cells based on the dificulty level.
+   *
+   * @memberof AppComponent
+   */
+  setDifficulty() {
+
+  }
+
+  /**
+   * Verify which moves are allowed from the cell passed as parameter
+   *
+   * @param {Cell} cell
+   * @returns
+   * @memberof AppComponent
+   */
+  getAllowedMoves(cell: Cell) {
+    const allowedMoves = [];
+
+    for (const move of allowedBaseMoves) {
+      // Get move direction indexes
+      const rowDir = cell.row + move.row;
+      const colDir = cell.col + move.col;
+
+      // Check table boundaries
+      if (
+        rowDir < 0 ||
+        rowDir > this.gridInfo.rows ||
+        colDir < 0 ||
+        colDir > this.gridInfo.cols
+      ) continue;
+
+      // Check move cell is empty
+      const cellMove = this.hidokuGrid[rowDir][colDir];
+      if (cellMove.value !== 0) return;
+
+      allowedMoves.push(move);
+    }
+
+    return allowedMoves;
   }
 }

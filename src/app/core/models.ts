@@ -39,8 +39,16 @@ export class Cell {
 }
 
 
+export const allowedBaseMoves = (() => {
+  const moves: Move[] = [];
+  for (let row = -1; row <= 1; row++) {
+    for (let col = -1; col <= 1; col++) {
+      moves.push(new Move(row, col));
+    }
   }
-}
+  moves.splice(4, 1);
+  return moves;
+})();
 
 export const formErrors = [
   {
