@@ -1,5 +1,30 @@
+export class GridInfo {
+  rows: number;
+  cols: number;
+  quantity?: number;
+  dificulty: number;
+
+  constructor(value: GridInfo) {
+    ({
+      rows: this.rows,
+      cols: this.cols,
+      dificulty: this.dificulty
+    } = value);
+    this.quantity = (this.rows + 1) * (this.cols + 1);
+  }
+}
+
+export class Move {
+  constructor(public row, public col) {}
+}
+
 export class Cell {
+
+  isEdge = false;
+
   constructor(
+    public row = 0,
+    public col = 0,
     public value = 0,
     public label: number = null,
   ) {}
@@ -13,17 +38,7 @@ export class Cell {
   }
 }
 
-export class GridInfo {
-  filas: number;
-  columnas: number;
-  dificultad: number;
 
-  constructor(value: GridInfo) {
-    ({
-      filas: this.filas,
-      columnas: this.columnas,
-      dificultad: this.dificultad
-    } = value);
   }
 }
 

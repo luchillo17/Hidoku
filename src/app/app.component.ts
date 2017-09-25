@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-import { Cell, formErrors, GridInfo } from './core/models';
+import { Cell, formErrors, GridInfo, allowedBaseMoves } from './core/models';
 
 @Component({
   selector: 'app-root',
@@ -9,24 +9,26 @@ import { Cell, formErrors, GridInfo } from './core/models';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'app';
-  hidokuGrid = [];
   form: FormGroup;
   errors = formErrors;
 
+  gridInfo: GridInfo;
+  startCell: Cell;
+  hidokuGrid = [];
+
   constructor(fb: FormBuilder) {
     this.form = fb.group({
-      filas: [null, [
+      rows: [null, [
         Validators.required,
         Validators.pattern(/\d+/),
         Validators.min(1),
       ]],
-      columnas: [null, [
+      cols: [null, [
         Validators.required,
         Validators.pattern(/\d+/),
         Validators.min(1),
       ]],
-      dificultad: [2, [
+      dificulty: [2, [
         Validators.required,
         Validators.pattern(/\d+/),
         Validators.min(1),
@@ -40,23 +42,33 @@ export class AppComponent {
       return;
     }
 
-    const gridInfo = new GridInfo(this.form.value);
+    this.gridInfo = new GridInfo({
+      rows: this.form.value.rows - 1,
+      cols: this.form.value.cols - 1,
+      dificulty: this.form.value.dificulty,
+    });
 
     // Generates a matrix
-    this.generateGrid(gridInfo);
+    this.generateGrid();
 
     // Generates a valid solution
-    this.generateSolution(gridInfo);
+    this.generateSolution();
 
     // Hides cells based on dificulty
-    this.setDifficulty(gridInfo);
+    this.setDifficulty();
   }
 
-  generateGrid(gridInfo: GridInfo) {
-    for (let fila = 0; fila < gridInfo.filas; fila++) {
-      this.hidokuGrid[fila] = [];
-      for (let columna = 0; columna < gridInfo.columnas; columna++) {
-        this.hidokuGrid[fila][columna] = new Cell();
+  /**
+   * Generates a grid with empty cells.
+   *
+   * @memberof AppComponent
+   */
+  generateGrid() {
+    this.hidokuGrid = [];
+    for (let row = 0; row <= this.gridInfo.rows; row++) {
+      this.hidokuGrid[row] = [];
+      for (let col = 0; col <= this.gridInfo.cols; col++) {
+        this.hidokuGrid[row][col] = new Cell(row, col);
       }
     }
   }
