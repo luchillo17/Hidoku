@@ -3,42 +3,51 @@
 </md-toolbar>
 
 <form [formGroup]='form' (ngSubmit)='generateHidoku()'>
-  <md-form-field>
-    <label>Filas</label>
-    <input mdInput type='text' formControlName='filas'>
-    <div ngxErrors="filas">
-      <md-error *ngFor="let error of errors" [ngxError]="error.name" [when]="error.rules">
-        {{ error.text }}
+  <div id='formContainer'>
+    <md-form-field>
+      <label>Filas</label>
+      <input mdInput type='text' formControlName='rows'>
+      <md-error ngxErrors="rows">
+        <div *ngFor="let error of errors" [ngxError]="error.name" [when]="error.rules">
+          {{ error.text }}
+        </div>
       </md-error>
-    </div>
-  </md-form-field>
+    </md-form-field>
 
-  <md-form-field>
-    <label>Columnas</label>
-    <input mdInput type='text' formControlName='columnas'>
-    <div ngxErrors="columnas">
-      <div *ngFor="let error of errors" [ngxError]="error.name" [when]="error.rules">
-        {{ error.text }}
-      </div>
-    </div>
-  </md-form-field>
+    <md-form-field>
+      <label>Columnas</label>
+      <input mdInput type='text' formControlName='cols'>
+      <md-error ngxErrors="cols">
+        <div *ngFor="let error of errors" [ngxError]="error.name" [when]="error.rules">
+          {{ error.text }}
+        </div>
+      </md-error>
+    </md-form-field>
 
-  <md-form-field>
-    <label>Dificultad</label>
-    <input mdInput type='text' formControlName='dificultad'>
-    <div ngxErrors="dificultad">
-      <div *ngFor="let error of errors" [ngxError]="error.name" [when]="error.rules">
-        {{ error.text }}
-      </div>
-    </div>
-  </md-form-field>
+    <md-form-field>
+      <label>Dificultad</label>
+      <input mdInput type='text' formControlName='dificulty'>
+      <md-error ngxErrors="dificulty">
+        <div *ngFor="let error of errors" [ngxError]="error.name" [when]="error.rules">
+          {{ error.text }}
+        </div>
+      </md-error>
+    </md-form-field>
+  </div>
 
-  <button type="submit">Submit</button>
+  <button
+    md-raised-button
+    color="primary"
+    type="submit"
+  >Submit</button>
 </form>
 
 <table>
-  <tr *ngFor="let filas of hidokuGrid">
-    <td *ngFor="let cel of filas">
+  <tr *ngFor="let rows of hidokuGrid">
+    <td
+      *ngFor="let cel of rows"
+      [ngClass]="{'cellEdge': cel.isEdge}"
+    >
       {{ cel.label }}
     </td>
   </tr>

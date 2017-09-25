@@ -3,25 +3,41 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
+
   md-toolbar /deep/ mat-toolbar-row {
     text-align: center;
     justify-content: center;
   }
+  form {
+    display: flex;
+    flex-direction: column;
+
+    margin-bottom: 20px;
+
+    > div#formContainer {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  }
   table {
-    display: block;
+    display: flex;
     min-width: 100px;
     min-height: 100px;
+    align-items: center;
+    justify-content: center;
+
     background: gray;
+
     td {
       border: 2px solid black;
       height: 36px;
       min-width: 36px;
+
+      &.cellEdge {
+        border-color: #8a0b08;
+        background: #ef6c00;
+      }
     }
-  }
-  input.ng-invalid.ng-touched.ng-dirty {
-    border: 1px solid red;
-  }
-  md-error {
-    color: red;
   }
 }
