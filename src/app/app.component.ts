@@ -1,22 +1,26 @@
-import { Component } from '@angular/core';
+import {TdLoadingService} from '@covalent/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-import { Cell, formErrors, GridInfo, allowedBaseMoves } from './core/models';
+import { Cell, formErrors, GridInfo, allowedBaseMoves, Move } from './core/models';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   form: FormGroup;
   errors = formErrors;
 
   gridInfo: GridInfo;
   startCell: Cell;
-  hidokuGrid = [];
+  hidokuGrid: Cell[][] = [];
 
-  constructor(fb: FormBuilder) {
+  constructor(
+    fb: FormBuilder,
+    private _loadingService: TdLoadingService,
+  ) {
     this.form = fb.group({
       rows: [null, [
         Validators.required,
@@ -37,10 +41,16 @@ export class AppComponent {
     });
   }
 
+  ngOnInit() {
+    this._loadingService.register('overlayStarSyntax');
+  }
+
   generateHidoku() {
     if (this.form.invalid) {
       return;
     }
+
+    this._loadingService.register('overlayStarSyntax');
 
     this.gridInfo = new GridInfo({
       rows: this.form.value.rows - 1,
@@ -56,6 +66,11 @@ export class AppComponent {
 
     // Hides cells based on dificulty
     this.setDifficulty();
+
+    console.log('====================================');
+    console.log('Finish');
+    console.log('====================================');
+    this._loadingService.resolveAll('overlayStarSyntax');
   }
 
   /**
@@ -92,14 +107,32 @@ export class AppComponent {
     this.startCell.isEdge = true;
     this.startCell.showValue();
 
-    console.log('====================================');
-    console.log('Moves: ', allowedBaseMoves);
-    console.log('====================================');
-
-
+    this.recursiveMove(this.startCell);
   }
 
+  private recursiveMove(cell: Cell) {
+    if (cell.value === this.gridInfo.quantity) {
+      cell.isEdge = true;
+      cell.showValue();
+      return true;
+    }
 
+    const movesAllowed = this.getAllowedMoves(cell);
+
+    while (movesAllowed.length !== 0) {
+      const moveIndex = Math.round(Math.random() * (movesAllowed.length - 1));
+      const allowedMove = movesAllowed.splice(moveIndex, 1)[0];
+      const dir = this.calculateMoveIndex(cell, allowedMove);
+      const cellMove = this.hidokuGrid[dir.row][dir.col];
+      cellMove.value = cell.value + 1;
+      if (this.recursiveMove(cellMove)) {
+        cell.showValue();
+        return true;
+      }
+      cellMove.value = 0;
+    }
+    return false;
+  }
 
   /**
    * Hides some cells based on the dificulty level.
@@ -118,28 +151,33 @@ export class AppComponent {
    * @memberof AppComponent
    */
   getAllowedMoves(cell: Cell) {
-    const allowedMoves = [];
-
+    const allowedMoves: Move[] = [];
     for (const move of allowedBaseMoves) {
       // Get move direction indexes
-      const rowDir = cell.row + move.row;
-      const colDir = cell.col + move.col;
+      const dir = this.calculateMoveIndex(cell, move);
 
       // Check table boundaries
       if (
-        rowDir < 0 ||
-        rowDir > this.gridInfo.rows ||
-        colDir < 0 ||
-        colDir > this.gridInfo.cols
+        dir.row < 0 ||
+        dir.row > this.gridInfo.rows ||
+        dir.col < 0 ||
+        dir.col > this.gridInfo.cols
       ) continue;
 
       // Check move cell is empty
-      const cellMove = this.hidokuGrid[rowDir][colDir];
-      if (cellMove.value !== 0) return;
+      const cellMove = this.hidokuGrid[dir.row][dir.col];
+      if (cellMove.value !== 0) continue;
 
       allowedMoves.push(move);
     }
 
     return allowedMoves;
+  }
+
+  calculateMoveIndex(cell: Cell, move: Move) {
+    return {
+      row: cell.row + move.row,
+      col: cell.col + move.col,
+    };
   }
 }
