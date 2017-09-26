@@ -20,23 +20,31 @@
       flex-wrap: wrap;
     }
   }
-  table {
-    display: flex;
-    min-width: 100px;
-    min-height: 100px;
-    align-items: center;
-    justify-content: center;
+  #hidokuLoading {
+    /deep/ .td-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-    background: gray;
+    table {
+      display: flex;
+      min-width: 100px;
+      min-height: 100px;
+      align-items: center;
+      justify-content: center;
 
-    td {
-      border: 2px solid black;
-      height: 36px;
-      min-width: 36px;
+      background: gray;
 
-      &.cellEdge {
-        border-color: #8a0b08;
-        background: #ef6c00;
+      td {
+        border: 2px solid black;
+        height: 36px;
+        min-width: 36px;
+
+        &.cellEdge {
+          border-color: #8a0b08;
+          background: #ef6c00;
+        }
       }
     }
   }

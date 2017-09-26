@@ -46,7 +46,7 @@ export class AppComponent implements OnInit {
     this._loadingService.register('overlayStarSyntax');
   }
 
-  generateHidoku() {
+  async generateHidoku() {
     if (this.form.invalid) {
       return;
     }
@@ -59,17 +59,16 @@ export class AppComponent implements OnInit {
       dificulty: this.form.value.dificulty,
     });
 
-    const startTime = new Date().getTime();
     console.time('generateHidoku');
 
     // Generates a matrix
     this.generateGrid();
 
     // Generates a valid solution
-    this.generateSolution();
+    await this.generateSolution();
 
     // Hides cells based on dificulty
-    this.setDifficulty();
+    await this.setDifficulty();
 
     this.hidokuGrid = this.processGrid;
 
@@ -101,7 +100,7 @@ export class AppComponent implements OnInit {
      *
      * @memberof AppComponent
      */
-  generateSolution() {
+  async generateSolution() {
     // Get random starting cell positions
     const randomCol = Math.round(Math.random() * this.gridInfo.cols);
     const randomRow = Math.round(Math.random() * this.gridInfo.rows);
@@ -114,10 +113,10 @@ export class AppComponent implements OnInit {
     this.startCell.isEdge = true;
     this.startCell.showValue();
 
-    this.recursiveMove(this.startCell);
+    await this.recursiveMove(this.startCell);
   }
 
-  private recursiveMove(cell: Cell) {
+  private async recursiveMove(cell: Cell) {
     if (cell.value === this.gridInfo.quantity) {
       cell.isEdge = true;
       cell.showValue();
@@ -132,7 +131,7 @@ export class AppComponent implements OnInit {
       const dir = this.calculateMoveIndex(cell, allowedMove);
       const cellMove = this.processGrid[dir.row][dir.col];
       cellMove.value = cell.value + 1;
-      if (this.recursiveMove(cellMove)) {
+      if (await this.recursiveMove(cellMove)) {
         cell.showValue();
         return true;
       }
@@ -146,7 +145,7 @@ export class AppComponent implements OnInit {
    *
    * @memberof AppComponent
    */
-  setDifficulty() {
+  async setDifficulty() {
 
   }
 

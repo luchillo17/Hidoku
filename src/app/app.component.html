@@ -42,16 +42,18 @@
   >Submit</button>
 </form>
 
-<div *tdLoading="'overlayStarSyntax'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
+<div id="hidokuLoading">
+  <div *tdLoading="'overlayStarSyntax'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
 
-  <table>
-    <tr *ngFor="let rows of hidokuGrid">
-      <td
-        *ngFor="let cell of rows"
-        [ngClass]="{'cellEdge': cell.isEdge}"
-      >
-        {{ cell.label }}
-      </td>
-    </tr>
-  </table>
+    <table>
+      <tr *ngFor="let rows of hidokuGrid">
+        <td
+          *ngFor="let cell of rows"
+          [ngClass]="{'cellEdge': cell.isEdge}"
+        >
+          {{ cell.label }}
+        </td>
+      </tr>
+    </table>
+  </div>
 </div>
