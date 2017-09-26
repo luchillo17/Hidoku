@@ -1,4 +1,4 @@
-import { BrowserModule } from '@angular/platform-browser';
+import { WorkerAppModule } from '@angular/platform-webworker';
 import { NgModule } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatGridListModule, MatToolbarModule, MatButtonModule, MatInputModule } from '@angular/material';
@@ -13,7 +13,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     AppComponent
   ],
   imports: [
-    BrowserModule,
+    WorkerAppModule,
 
     FormsModule,
     ReactiveFormsModule,
