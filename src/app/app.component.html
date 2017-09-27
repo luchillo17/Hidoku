@@ -2,7 +2,7 @@
   <span>Hidoku</span>
 </md-toolbar>
 
-<form [formGroup]='form' (ngSubmit)='generateHidoku()'>
+<form #formData='ngForm' [formGroup]='form'>
   <div id='formContainer'>
     <md-form-field>
       <label>Filas</label>
@@ -35,11 +35,28 @@
     </md-form-field>
   </div>
 
-  <button
-    md-raised-button
-    color="primary"
-    type="submit"
-  >Submit</button>
+  <div>
+
+    <button
+      md-raised-button
+      color="primary"
+      type="submit"
+      (click)="byGreedy()"
+    >Greedy Algorithm</button>
+    <button
+      md-raised-button
+      color="primary"
+      type="submit"
+      (click)="bySpiral()"
+    >Spiral Algorithm</button>
+    <button
+      md-raised-button
+      color="primary"
+      type="submit"
+      (click)="byBackTracking()"
+    >BackTracking Algorithm</button>
+
+  </div>
 </form>
 
 <div id="hidokuLoading">
@@ -49,9 +66,17 @@
       <tr *ngFor="let rows of hidokuGrid">
         <td
           *ngFor="let cell of rows"
-          [ngClass]="{'cellEdge': cell.isEdge}"
+          [ngClass]="{'cellEdge': cell.isEdge, 'cellClue': !cell.isEdge && cell.readOnly}"
         >
-          {{ cell.label }}
+          <div>
+            <input
+              type='number'
+              [value]='cell.label'
+              [readonly]='cell.readOnly'
+              (input)='cell.setValue($event)'
+            >
+          </div>
+          <!-- {{ cell.label }} -->
         </td>
       </tr>
     </table>

@@ -16,8 +16,10 @@
 
     > div#formContainer {
       display: flex;
-      justify-content: center;
       flex-wrap: wrap;
+      justify-content: center;
+
+      padding-bottom: 10px;
     }
   }
   #hidokuLoading {
@@ -44,6 +46,12 @@
         &.cellEdge {
           border-color: #8a0b08;
           background: #ef6c00;
+        }
+        &.cellClue {
+          background: #1CEF00;
+        }
+        input {
+          width: 36px;
         }
       }
     }

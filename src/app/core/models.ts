@@ -20,35 +20,39 @@ export class Move {
 
 export class Cell {
 
+  isShowValue = false;
   isEdge = false;
+  readOnly = true;
 
   constructor(
     public row = 0,
     public col = 0,
     public value = 0,
-    public label: number = null,
   ) {}
 
+  get label() {
+    if (!this.isShowValue) {
+      return null;
+    }
+    return this.value;
+  }
+
   showValue() {
-    this.label = this.value;
+    this.isShowValue = true;
   }
 
   hideValue() {
-    this.label = null;
+    this.isShowValue = true;
+  }
+
+  setValue(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.value = input.valueAsNumber;
+    console.log('====================================');
+    console.log('Value: ', this.value);
+    console.log('====================================');
   }
 }
-
-
-export const allowedBaseMoves = (() => {
-  const moves: Move[] = [];
-  for (let row = -1; row <= 1; row++) {
-    for (let col = -1; col <= 1; col++) {
-      moves.push(new Move(row, col));
-    }
-  }
-  moves.splice(4, 1);
-  return moves;
-})();
 
 export const formErrors = [
   {

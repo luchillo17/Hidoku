@@ -1,8 +1,9 @@
 import {TdLoadingService} from '@covalent/core';
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, NgForm } from '@angular/forms';
 
-import { Cell, formErrors, GridInfo, allowedBaseMoves, Move } from './core/models';
+import { Cell, formErrors, GridInfo, Move } from './core/models';
+import { BackTracking, RecursiveAlgorightm, SpiralMatrix, GreedyMatrix } from './core/algorithms';
 
 @Component({
   selector: 'app-root',
@@ -10,6 +11,9 @@ import { Cell, formErrors, GridInfo, allowedBaseMoves, Move } from './core/model
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+  @ViewChild('formData')
+  formRef: NgForm;
+
   form: FormGroup;
   errors = formErrors;
 
@@ -46,37 +50,64 @@ export class AppComponent implements OnInit {
     this._loadingService.register('overlayStarSyntax');
   }
 
-  async generateHidoku() {
+  byGreedy() {
+    this.generateHidoku(GreedyMatrix);
+  }
+  bySpiral() {
+    this.generateHidoku(SpiralMatrix);
+  }
+  byBackTracking() {
+    this.generateHidoku(BackTracking);
+  }
+
+  async generateHidoku(algorithmClass: typeof RecursiveAlgorightm) {
     if (this.form.invalid) {
+      Object.values(this.form.controls)
+        .forEach((control) => {
+          control.markAsDirty();
+          control.markAsTouched();
+        });
+      this.formRef.ngSubmit.emit();
       return;
     }
 
     this._loadingService.register('overlayStarSyntax');
 
-    this.gridInfo = new GridInfo({
+    console.time('generateHidoku');
+
+    const gridInfo = new GridInfo({
       rows: this.form.value.rows - 1,
       cols: this.form.value.cols - 1,
       dificulty: this.form.value.dificulty,
     });
 
-    console.time('generateHidoku');
+    try {
 
-    // Generates a matrix
-    this.generateGrid();
+      // Generates a matrix
+      const grid = this.generateGrid(gridInfo);
 
-    // Generates a valid solution
-    await this.generateSolution();
+      // Use selected algorith for generating the solution
+      const algorithm = new algorithmClass(gridInfo, grid);
 
-    // Hides cells based on dificulty
-    await this.setDifficulty();
+      // Generates a valid solution
+      this.processGrid = await algorithm.generateSolution();
 
-    this.hidokuGrid = this.processGrid;
+      // Hides cells based on dificulty
+      await this.setDifficulty();
 
-    console.log('====================================');
-    console.timeEnd('generateHidoku');
-    console.log('====================================');
+      this.hidokuGrid = this.processGrid;
 
-    this._loadingService.resolveAll('overlayStarSyntax');
+      console.log('====================================');
+      console.timeEnd('generateHidoku');
+      console.log('====================================');
+
+    } catch (error) {
+      console.log('====================================');
+      console.log('HP se rompio: ', error);
+      console.log('====================================');
+    } finally {
+      this._loadingService.resolveAll('overlayStarSyntax');
+    }
   }
 
   /**
@@ -84,14 +115,15 @@ export class AppComponent implements OnInit {
    *
    * @memberof AppComponent
    */
-  generateGrid() {
-    this.processGrid = [];
-    for (let row = 0; row <= this.gridInfo.rows; row++) {
-      this.processGrid[row] = [];
-      for (let col = 0; col <= this.gridInfo.cols; col++) {
-        this.processGrid[row][col] = new Cell(row, col);
+  generateGrid(gridInfo: GridInfo) {
+    const processGrid: Cell[][] = [];
+    for (let row = 0; row <= gridInfo.rows; row++) {
+      processGrid[row] = [];
+      for (let col = 0; col <= gridInfo.cols; col++) {
+        processGrid[row][col] = new Cell(row, col);
       }
     }
+    return processGrid;
   }
 
     /**
@@ -100,45 +132,9 @@ export class AppComponent implements OnInit {
      *
      * @memberof AppComponent
      */
-  async generateSolution() {
-    // Get random starting cell positions
-    const randomCol = Math.round(Math.random() * this.gridInfo.cols);
-    const randomRow = Math.round(Math.random() * this.gridInfo.rows);
 
-    // Get starting cell
-    this.startCell = this.processGrid[randomRow][randomCol];
 
-    // Initialize starting cell
-    this.startCell.value = 1;
-    this.startCell.isEdge = true;
-    this.startCell.showValue();
 
-    await this.recursiveMove(this.startCell);
-  }
-
-  private async recursiveMove(cell: Cell) {
-    if (cell.value === this.gridInfo.quantity) {
-      cell.isEdge = true;
-      cell.showValue();
-      return true;
-    }
-
-    const movesAllowed = this.getAllowedMoves(cell);
-
-    while (movesAllowed.length !== 0) {
-      const moveIndex = Math.round(Math.random() * (movesAllowed.length - 1));
-      const allowedMove = movesAllowed.splice(moveIndex, 1)[0];
-      const dir = this.calculateMoveIndex(cell, allowedMove);
-      const cellMove = this.processGrid[dir.row][dir.col];
-      cellMove.value = cell.value + 1;
-      if (await this.recursiveMove(cellMove)) {
-        cell.showValue();
-        return true;
-      }
-      cellMove.value = 0;
-    }
-    return false;
-  }
 
   /**
    * Hides some cells based on the dificulty level.
@@ -147,43 +143,5 @@ export class AppComponent implements OnInit {
    */
   async setDifficulty() {
 
-  }
-
-  /**
-   * Verify which moves are allowed from the cell passed as parameter
-   *
-   * @param {Cell} cell
-   * @returns
-   * @memberof AppComponent
-   */
-  getAllowedMoves(cell: Cell) {
-    const allowedMoves: Move[] = [];
-    for (const move of allowedBaseMoves) {
-      // Get move direction indexes
-      const dir = this.calculateMoveIndex(cell, move);
-
-      // Check table boundaries
-      if (
-        dir.row < 0 ||
-        dir.row > this.gridInfo.rows ||
-        dir.col < 0 ||
-        dir.col > this.gridInfo.cols
-      ) continue;
-
-      // Check move cell is empty
-      const cellMove = this.processGrid[dir.row][dir.col];
-      if (cellMove.value !== 0) continue;
-
-      allowedMoves.push(move);
-    }
-
-    return allowedMoves;
-  }
-
-  calculateMoveIndex(cell: Cell, move: Move) {
-    return {
-      row: cell.row + move.row,
-      col: cell.col + move.col,
-    };
   }
 }
