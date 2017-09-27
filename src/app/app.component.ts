@@ -50,16 +50,40 @@ export class AppComponent implements OnInit {
     this._loadingService.register('overlayStarSyntax');
   }
 
+  /**
+   * Resolve by GreedyMatrix algorithm
+   *
+   * @memberof AppComponent
+   */
   byGreedy() {
     this.generateHidoku(GreedyMatrix);
   }
+
+  /**
+   * Resolve by SpiralMatrix algorithm
+   *
+   * @memberof AppComponent
+   */
   bySpiral() {
     this.generateHidoku(SpiralMatrix);
   }
+
+  /**
+   * Resolve by BackTracking algorithm
+   *
+   * @memberof AppComponent
+   */
   byBackTracking() {
     this.generateHidoku(BackTracking);
   }
 
+  /**
+   * Generate hidoku board
+   *
+   * @param {typeof RecursiveAlgorightm} algorithmClass
+   * @returns
+   * @memberof AppComponent
+   */
   async generateHidoku(algorithmClass: typeof RecursiveAlgorightm) {
     if (this.form.invalid) {
       Object.values(this.form.controls)
@@ -76,8 +100,8 @@ export class AppComponent implements OnInit {
     console.time('generateHidoku');
 
     const gridInfo = new GridInfo({
-      rows: this.form.value.rows - 1,
-      cols: this.form.value.cols - 1,
+      rows: this.form.value.rows,
+      cols: this.form.value.cols,
       dificulty: this.form.value.dificulty,
     });
 
@@ -93,7 +117,7 @@ export class AppComponent implements OnInit {
       this.processGrid = await algorithm.generateSolution();
 
       // Hides cells based on dificulty
-      await this.setDifficulty();
+      await this.setDifficulty(gridInfo);
 
       this.hidokuGrid = this.processGrid;
 
@@ -117,31 +141,33 @@ export class AppComponent implements OnInit {
    */
   generateGrid(gridInfo: GridInfo) {
     const processGrid: Cell[][] = [];
-    for (let row = 0; row <= gridInfo.rows; row++) {
+    for (let row = 0; row <= gridInfo.rowIndexes; row++) {
       processGrid[row] = [];
-      for (let col = 0; col <= gridInfo.cols; col++) {
+      for (let col = 0; col <= gridInfo.colIndexes; col++) {
         processGrid[row][col] = new Cell(row, col);
       }
     }
     return processGrid;
   }
 
-    /**
-     * Backtracking part of the app, generates the
-     * hidoku values for a valid solution.
-     *
-     * @memberof AppComponent
-     */
-
-
-
-
   /**
    * Hides some cells based on the dificulty level.
    *
+   * @param {GridInfo} gridInfo
    * @memberof AppComponent
    */
-  async setDifficulty() {
+  async setDifficulty(gridInfo: GridInfo) {
+    const dificultyPercentage = (70 - (gridInfo.dificulty * 10)) / 100;
+    const toShow = Math.round(gridInfo.rows * gridInfo.cols * dificultyPercentage);
 
+    for (let i = 0; i < toShow; i++) {
+      const row = Math.round(Math.random() * gridInfo.rowIndexes);
+      const col = Math.round(Math.random() * gridInfo.rowIndexes);
+
+      this
+        .processGrid[row][col]
+        .showValue()
+        .isClue = true;
+    }
   }
 }

@@ -18,7 +18,7 @@ export class RecursiveAlgorightm implements IRecursiveAlgorightm {
 export class BackTracking extends RecursiveAlgorightm implements IRecursiveAlgorightm {
   private allowedBaseMoves: Move[] = [];
 
-  constructor(public gridInfo, public processGrid: Cell[][]) {
+  constructor(public gridInfo: GridInfo, public processGrid: Cell[][]) {
     super(gridInfo, processGrid);
 
     // Set allowed Moves
@@ -31,8 +31,8 @@ export class BackTracking extends RecursiveAlgorightm implements IRecursiveAlgor
   }
   async generateSolution(): Promise<Cell[][]> {
     // Get random starting cell positions
-    const randomCol = Math.round(Math.random() * this.gridInfo.cols);
-    const randomRow = Math.round(Math.random() * this.gridInfo.rows);
+    const randomCol = Math.round(Math.random() * this.gridInfo.colIndexes);
+    const randomRow = Math.round(Math.random() * this.gridInfo.rowIndexes);
 
     // Get starting cell
     const startCell = this.processGrid[randomRow][randomCol];
@@ -63,7 +63,7 @@ export class BackTracking extends RecursiveAlgorightm implements IRecursiveAlgor
       const cellMove = this.processGrid[dir.row][dir.col];
       cellMove.value = cell.value + 1;
       if (await this.recursiveMove(cellMove)) {
-        cell.showValue();
+        // cell.showValue();
         return true;
       }
       cellMove.value = 0;
@@ -87,9 +87,9 @@ export class BackTracking extends RecursiveAlgorightm implements IRecursiveAlgor
       // Check table boundaries
       if (
         dir.row < 0 ||
-        dir.row > this.gridInfo.rows ||
+        dir.row > this.gridInfo.rowIndexes ||
         dir.col < 0 ||
-        dir.col > this.gridInfo.cols
+        dir.col > this.gridInfo.colIndexes
       ) continue;
 
       // Check move cell is empty

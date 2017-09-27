@@ -1,16 +1,31 @@
-export class GridInfo {
+interface IGridInfo {
+  rows: number;
+  cols: number;
+  quantity?: number;
+  dificulty: number;
+  readonly rowIndexes?: number;
+  readonly colIndexes?: number;
+}
+
+export class GridInfo implements IGridInfo {
   rows: number;
   cols: number;
   quantity?: number;
   dificulty: number;
 
-  constructor(value: GridInfo) {
+  constructor(value: IGridInfo) {
     ({
       rows: this.rows,
       cols: this.cols,
       dificulty: this.dificulty
     } = value);
-    this.quantity = (this.rows + 1) * (this.cols + 1);
+    this.quantity = (this.rows) * (this.cols);
+  }
+  get rowIndexes() {
+    return this.rows - 1;
+  }
+  get colIndexes() {
+    return this.cols - 1;
   }
 }
 
@@ -20,9 +35,9 @@ export class Move {
 
 export class Cell {
 
-  isShowValue = false;
   isEdge = false;
-  readOnly = true;
+  readOnly = false;
+  isShowValue = false;
 
   constructor(
     public row = 0,
@@ -37,20 +52,28 @@ export class Cell {
     return this.value;
   }
 
+  get isClue() {
+    return this.readOnly;
+  }
+
+  set isClue(isClue: boolean) {
+    this.readOnly = isClue;
+  }
+
   showValue() {
     this.isShowValue = true;
+    return this;
   }
 
   hideValue() {
     this.isShowValue = true;
+    return this;
   }
 
   setValue(event: Event) {
     const input = event.target as HTMLInputElement;
     this.value = input.valueAsNumber;
-    console.log('====================================');
-    console.log('Value: ', this.value);
-    console.log('====================================');
+    return this;
   }
 }
 
