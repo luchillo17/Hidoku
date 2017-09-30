@@ -69,6 +69,7 @@ module.exports = {
       "./node_modules",
       "./node_modules"
     ],
+
     "symlinks": true
   },
   "resolveLoader": {
@@ -350,6 +351,14 @@ module.exports = {
   "plugins": [
     new NoEmitOnErrorsPlugin(),
     new CopyWebpackPlugin([
+      {
+        "context": "/mnt/LinHDD/Carlos/Programming/Hidoku/src/",
+        "to": "",
+        "from": {
+          "glob": "electron.js",
+          "dot": true
+        }
+      },
       {
         "context": "/mnt/LinHDD/Carlos/Programming/Hidoku/src/",
         "to": "",
