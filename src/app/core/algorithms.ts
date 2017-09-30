@@ -1,13 +1,13 @@
 import {Move, GridInfo,  Cell} from './models';
 
 interface IRecursiveAlgorightm {
-  recursiveMove(cell: Cell);
+  recursiveMove(cell: Cell, finalCell?: Cell);
   generateSolution(): Promise<Cell[][]>;
 }
 
 export class RecursiveAlgorightm implements IRecursiveAlgorightm {
   constructor(public gridInfo, public processGrid: Cell[][]) { }
-  recursiveMove(cell: Cell) {
+  recursiveMove(cell: Cell, finalCell?: Cell) {
     throw new Error('Method not implemented.');
   }
   generateSolution(): Promise<Cell[][]> {
