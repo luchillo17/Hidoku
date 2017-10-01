@@ -1,4 +1,4 @@
-import {Move, GridInfo,  Cell} from './models';
+import { Move, GridInfo, Cell } from './models';
 
 interface IRecursiveAlgorightm {
   recursiveMove(cell: Cell, finalCell?: Cell);
@@ -35,7 +35,7 @@ export class BackTracking extends RecursiveAlgorightm implements IRecursiveAlgor
     const randomRow = Math.round(Math.random() * this.gridInfo.rowIndexes);
 
     // Get starting cell
-    const startCell = this.processGrid[randomRow][randomCol];
+    const startCell = this.processGrid[ randomRow ][ randomCol ];
 
     // Initialize starting cell
     startCell.value = 1;
@@ -58,9 +58,9 @@ export class BackTracking extends RecursiveAlgorightm implements IRecursiveAlgor
 
     while (movesAllowed.length !== 0) {
       const moveIndex = Math.round(Math.random() * (movesAllowed.length - 1));
-      const allowedMove = movesAllowed.splice(moveIndex, 1)[0];
+      const allowedMove = movesAllowed.splice(moveIndex, 1)[ 0 ];
       const dir = this.calculateMoveIndex(cell, allowedMove);
-      const cellMove = this.processGrid[dir.row][dir.col];
+      const cellMove = this.processGrid[ dir.row ][ dir.col ];
       cellMove.value = cell.value + 1;
       if (await this.recursiveMove(cellMove)) {
         // cell.showValue();
@@ -93,7 +93,7 @@ export class BackTracking extends RecursiveAlgorightm implements IRecursiveAlgor
       ) continue;
 
       // Check move cell is empty
-      const cellMove = this.processGrid[dir.row][dir.col];
+      const cellMove = this.processGrid[ dir.row ][ dir.col ];
       if (cellMove.value !== 0) continue;
 
       allowedMoves.push(move);
@@ -121,7 +121,7 @@ export class SpiralMatrix extends RecursiveAlgorightm implements IRecursiveAlgor
 
 export class GreedyMatrix extends RecursiveAlgorightm implements IRecursiveAlgorightm {
   private allowedBaseMoves: Move[] = [];
-  
+
   constructor(public gridInfo: GridInfo, public processGrid: Cell[][]) {
     super(gridInfo, processGrid);
 
@@ -141,8 +141,8 @@ export class GreedyMatrix extends RecursiveAlgorightm implements IRecursiveAlgor
     const randomRowFinal = Math.round(Math.random() * this.gridInfo.rowIndexes);
 
     // Get starting and finishing cell
-    const startCell = this.processGrid[randomRowStart][randomColStart];
-    const finalCell = this.processGrid[randomRowFinal][randomColFinal];
+    const startCell = this.processGrid[ randomRowStart ][ randomColStart ];
+    const finalCell = this.processGrid[ randomRowFinal ][ randomColFinal ];
 
     // Initialize starting and finishing cell
     startCell.value = 1;
@@ -158,44 +158,44 @@ export class GreedyMatrix extends RecursiveAlgorightm implements IRecursiveAlgor
 
     return this.processGrid;
   }
-  
-   async recursiveMove(cell: Cell, finalCell: Cell) {
-  
+
+  async recursiveMove(cell: Cell, finalCell: Cell) {
     if (cell.value === this.gridInfo.quantity - 1) {
-      //cell.showValue();
       return true;
     }
+
     const movesAllowed = this.getAllowedMoves(cell);
-    
-    while (movesAllowed.length !== 0) {
-      const moveIndex = movesAllowed.indexOf(this.greaterDistance(movesAllowed, finalCell));
-      const allowedMove = movesAllowed.splice(moveIndex, 1)[0];
-      const dir = this.calculateMoveIndex(cell, allowedMove);
-      const cellMove = this.processGrid[dir.row][dir.col];
-      cellMove.value = cell.value + 1;
-      if (await this.recursiveMove(cellMove, finalCell)) {
-        // cell.showValue();
-        return true;
+
+    const cellMove = this.greaterDistance(cell, finalCell, movesAllowed);
+    cellMove.value = cell.value + 1;
+
+    setTimeout(() => this.recursiveMove(cellMove, finalCell), 0);
+  }
+
+  greaterDistance(cell: Cell, finalCell: Cell, allowedBaseMoves: Move[]) {
+    let lastCell: Cell;
+    let maxDistance = 0;
+    for (let i = 0; i < allowedBaseMoves.length; i++) {
+      const cellMove = this.getCellAtMove(cell, allowedBaseMoves[i]);
+      const distance = this.distance(cellMove, finalCell);
+      if (distance > maxDistance) {
+        lastCell = cellMove;
+        maxDistance = distance;
       }
-      cellMove.value = 0;
     }
-    return false;
+    return lastCell;
   }
 
-  greaterDistance(allowedBaseMoves: Move[], finalCell: Cell): Move{
-    let v = [];
-    for(let i = 0; i < allowedBaseMoves.length; i++){
-      v[i] = this.distance(allowedBaseMoves[i], finalCell);
-    }
-      return allowedBaseMoves[v.indexOf(Math.max.apply(null, v))];        
+  distance(cell: Cell, finalCell: Cell): number {
+    return Math.sqrt(Math.pow((finalCell.row - cell.row), 2) + Math.pow((finalCell.col - cell.col), 2));
   }
 
-  distance(cell: Move, finalCell: Cell): number{
-    return Math.sqrt(Math.pow((finalCell.row - cell.row) , 2) - Math.pow((finalCell.col - cell.col), 2));
+  getCellAtMove(cell: Cell, move: Move) {
+    return this.processGrid[cell.row + move.row][cell.col + move.col];
   }
 
   getAllowedMoves(cell: Cell) {
-    const allowedMoves: Move[] = [];  
+    const allowedMoves: Move[] = [];
     for (const move of this.allowedBaseMoves) {
       // Get move direction indexes
       const dir = this.calculateMoveIndex(cell, move);
@@ -209,7 +209,7 @@ export class GreedyMatrix extends RecursiveAlgorightm implements IRecursiveAlgor
       ) continue;
 
       // Check move cell is empty
-      const cellMove = this.processGrid[dir.row][dir.col];
+      const cellMove = this.processGrid[ dir.row ][ dir.col ];
       if (cellMove.value !== 0) continue;
 
       allowedMoves.push(move);

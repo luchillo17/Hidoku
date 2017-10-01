@@ -1,5 +1,5 @@
 import {TdLoadingService} from '@covalent/core';
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, NgForm } from '@angular/forms';
 import { flatMap } from 'lodash';
 import domtoimage from 'dom-to-image';
@@ -10,7 +10,8 @@ import { BackTracking, RecursiveAlgorightm, SpiralMatrix, GreedyMatrix } from '.
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements OnInit {
   @ViewChild('formData')
@@ -114,19 +115,19 @@ export class AppComponent implements OnInit {
     try {
 
       // Generates a matrix
-      const grid = this.generateGrid(gridInfo);
+      let grid = this.generateGrid(gridInfo);
 
       // Use selected algorith for generating the solution
       const algorithm = new algorithmClass(gridInfo, grid);
 
       // Generates a valid solution
-      this.processGrid = await algorithm.generateSolution();
+      grid = await algorithm.generateSolution();
 
       // Hides cells based on dificulty
-      await this.setDifficulty(gridInfo);
+      await this.setDifficulty(grid, gridInfo);
 
       this.gridInfo = gridInfo;
-      this.hidokuGrid = this.processGrid;
+      this.hidokuGrid = grid;
 
       performance.mark('B');
       performance.measure('A-B', 'A', 'B');
@@ -165,7 +166,7 @@ export class AppComponent implements OnInit {
    * @param {GridInfo} gridInfo
    * @memberof AppComponent
    */
-  async setDifficulty(gridInfo: GridInfo) {
+  async setDifficulty(grid: Cell[][], gridInfo: GridInfo) {
     const dificultyPercentage = (70 - (gridInfo.dificulty * 10)) / 100;
     const toShow = Math.round(gridInfo.rows * gridInfo.cols * dificultyPercentage);
     gridInfo.clues = toShow;
@@ -173,8 +174,7 @@ export class AppComponent implements OnInit {
       const row = Math.round(Math.random() * gridInfo.rowIndexes);
       const col = Math.round(Math.random() * gridInfo.rowIndexes);
 
-      this
-        .processGrid[row][col]
+      grid[row][col]
         .showValue()
         .isClue = true;
     }

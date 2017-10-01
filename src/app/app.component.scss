@@ -23,14 +23,16 @@
     }
   }
   #hidokuLoading {
+    width: 100%;
     /deep/ .td-loading {
       display: flex;
+      min-width: 100px;
+      min-height: 100px;
       align-items: center;
       justify-content: center;
     }
 
     table {
-      display: flex;
       min-width: 100px;
       min-height: 100px;
       align-items: center;
@@ -51,7 +53,7 @@
           background: #1CEF00;
         }
         input {
-          width: 36px;
+          width: 50px;
         }
       }
     }
