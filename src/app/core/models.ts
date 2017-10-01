@@ -10,8 +10,10 @@ interface IGridInfo {
 export class GridInfo implements IGridInfo {
   rows: number;
   cols: number;
-  quantity?: number;
   dificulty: number;
+
+  clues?: number;
+  quantity?: number;
 
   constructor(value: IGridInfo) {
     ({
