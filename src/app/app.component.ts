@@ -11,7 +11,6 @@ import { BackTracking, RecursiveAlgorightm, SpiralMatrix, GreedyMatrix } from '.
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements OnInit {
   @ViewChild('formData')
