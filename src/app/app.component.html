@@ -37,18 +37,21 @@
 
   <div>
 
+<!--
     <button
       md-raised-button
       color="primary"
       type="submit"
       (click)="byGreedy()"
     >Greedy Algorithm</button>
+
     <button
       md-raised-button
       color="primary"
       type="submit"
       (click)="bySpiral()"
     >Spiral Algorithm</button>
+-->
     <button
       md-raised-button
       color="primary"
@@ -62,7 +65,7 @@
 <div id="hidokuLoading">
   <div *tdLoading="'overlayStarSyntax'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
 
-    <table>
+    <table #hidokuTable>
       <tr *ngFor="let rows of hidokuGrid">
         <td
           *ngFor="let cell of rows"
@@ -81,4 +84,19 @@
       </tr>
     </table>
   </div>
+</div>
+
+<div class='saveButtons'>
+  <button
+    md-raised-button
+    color="primary"
+    type="submit"
+    (click)="saveTxt()"
+  >Save as txt</button>
+  <button
+    md-raised-button
+    color="primary"
+    type="submit"
+    (click)="savePng()"
+  >Save as png</button>
 </div>
