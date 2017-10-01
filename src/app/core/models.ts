@@ -32,7 +32,7 @@ export class GridInfo implements IGridInfo {
 }
 
 export class Move {
-  constructor(public row, public col) {}
+  constructor(public row: number, public col: number) {}
 }
 
 export class Cell {
