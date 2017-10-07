@@ -237,6 +237,10 @@
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/@ultimate/ngxerrors/-/ngxerrors-1.3.0.tgz#2bf228ebabe3af797e80f6b718a66c1f30ff323e"
 
+Q@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/Q/-/Q-1.0.0.tgz#c857afc928c9bea146202dd5c37fa1b1b63d9e28"
+
 abbrev@1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.0.tgz#d0554c2256636e2f56e7c2e5ad183f859428d81f"
@@ -1747,6 +1751,13 @@ electron-packager@^9.1.0:
     sanitize-filename "^1.6.0"
     semver "^5.3.0"
 
+electron-prebuilt@^1.4.13:
+  version "1.4.13"
+  resolved "https://registry.yarnpkg.com/electron-prebuilt/-/electron-prebuilt-1.4.13.tgz#0a0e4d7bf895a242061ccfab29394dcda1da33d2"
+  dependencies:
+    electron-download "^3.0.1"
+    extract-zip "^1.0.3"
+
 electron-to-chromium@^1.2.7:
   version "1.3.22"
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.22.tgz#4322d52c151406e3eaef74ad02676883e8416418"
@@ -2277,6 +2288,12 @@ fs-extra@^4.0.0:
     graceful-fs "^4.1.2"
     jsonfile "^4.0.0"
     universalify "^0.1.0"
+
+fs-jetpack@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/fs-jetpack/-/fs-jetpack-1.2.0.tgz#feb20b44bf3725492827cd2f81a7c812423882c5"
+  dependencies:
+    minimatch "^3.0.2"
 
 fs.realpath@^1.0.0:
   version "1.0.0"

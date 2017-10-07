@@ -352,7 +352,7 @@ module.exports = {
     new NoEmitOnErrorsPlugin(),
     new CopyWebpackPlugin([
       {
-        "context": "/mnt/LinHDD/Carlos/Programming/Hidoku/src/",
+        "context": path.resolve("src"),
         "to": "",
         "from": {
           "glob": "electron.js",
@@ -360,7 +360,7 @@ module.exports = {
         }
       },
       {
-        "context": "/mnt/LinHDD/Carlos/Programming/Hidoku/src/",
+        "context": path.resolve("src"),
         "to": "",
         "from": {
           "glob": "assets/**/*",
@@ -368,7 +368,7 @@ module.exports = {
         }
       },
       {
-        "context": "/mnt/LinHDD/Carlos/Programming/Hidoku/src/",
+        "context": path.resolve("src"),
         "to": "",
         "from": {
           "glob": "favicon.ico",
