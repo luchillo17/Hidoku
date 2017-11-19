@@ -1,4 +1,4 @@
-import { Move, GridInfo, Cell } from './models';
+import { Move, GridInfo, Cell, Section } from './models';
 
 interface IRecursiveAlgorightm {
   recursiveMove(cell: Cell, finalCell?: Cell);
@@ -99,6 +99,71 @@ export class BackTracking extends RecursiveAlgorightm implements IRecursiveAlgor
       allowedMoves.push(move);
     }
 
+    return allowedMoves;
+  }
+
+  calculateMoveIndex(cell: Cell, move: Move) {
+    return {
+      row: cell.row + move.row,
+      col: cell.col + move.col,
+    };
+  }
+}
+
+export class BackTrackingSections extends RecursiveAlgorightm implements IRecursiveAlgorightm {
+
+  private allowedBaseMoves: Move[] = [];
+  private allSections: Section[] = [];
+
+  constructor(public gridInfo: GridInfo, public processGrid: Cell[][]) {
+    super(gridInfo, processGrid);
+
+    // Set allowed Moves
+    for (let row = -1; row <= 1; row++) {
+      for (let col = -1; col <= 1; col++) {
+        this.allowedBaseMoves.push(new Move(row, col));
+      }
+    }
+    this.allowedBaseMoves.splice(4, 1);
+  }
+  async generateSolution(): Promise<Cell[][]> {
+    // Find all clues & order by number value
+
+    // Generate all sections by ordered clues
+
+    // Call recursiveMove with first section and wait until finshed
+    return this.processGrid;
+  }
+
+  async recursiveMove(cell, finalCell) {
+    // Last base case is finalSection && cell == finalCell
+
+    // General base case cell == finalCell, call recursiveMove(cell, nextFinalCell)
+
+    // Get movesAllowed ordered on distance
+    const movesAllowed = this.getAllowedMoves(cell, finalCell);
+
+    // BackTracking with distance management,
+    for (const allowedMove of movesAllowed) {
+      const dir = this.calculateMoveIndex(cell, allowedMove);
+      const cellMove = this.processGrid[ dir.row ][ dir.col ];
+      cellMove.value = cell.value + 1;
+      if (await this.recursiveMove(cellMove, finalCell)) {
+        return true;
+      }
+      cellMove.value = 0;
+    }
+
+    return false
+  }
+
+  getAllowedMoves(cell: Cell, finalCell: Cell) {
+    const allowedMoves: Move[] = [];
+    // Get all moves that ends in a cell with 0
+
+    // Order allowedMoves based on distance to finalCell
+      // Distance case: Number distance > block distance to finalCell, target far
+      // Distance case: Number distance < block distance to finalCell, target Only close
     return allowedMoves;
   }
 
@@ -243,4 +308,3 @@ export class GreedyMatrix extends RecursiveAlgorightm implements IRecursiveAlgor
     };
   }
 }
-

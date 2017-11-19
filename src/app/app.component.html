@@ -40,6 +40,13 @@
       md-raised-button
       color="primary"
       type="submit"
+      (click)="generateEmptyHidoku()"
+    >Empty board</button>
+
+    <button
+      md-raised-button
+      color="primary"
+      type="submit"
       (click)="byGreedy()"
     >Greedy Algorithm</button>
 
@@ -57,6 +64,13 @@
       type="submit"
       (click)="byBackTracking()"
     >BackTracking Algorithm</button>
+
+    <button
+      md-raised-button
+      color="primary"
+      type="submit"
+      (click)="byBackTrackingSections()"
+    >Solve Hidoku</button>
 
   </div>
 </form>

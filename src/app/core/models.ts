@@ -79,6 +79,10 @@ export class Cell {
   }
 }
 
+export class Section {
+  constructor(public start: Cell, public end: Cell){}
+}
+
 export const formErrors = [
   {
     name: 'required',

@@ -5,8 +5,12 @@ import { flatMap } from 'lodash';
 import domtoimage from 'dom-to-image';
 
 import { Cell, formErrors, GridInfo, Move } from './core/models';
-import { BackTracking, RecursiveAlgorightm, SpiralMatrix, GreedyMatrix } from './core/algorithms';
+import { BackTracking, BackTrackingSections, GreedyMatrix, RecursiveAlgorightm, SpiralMatrix } from './core/algorithms';
 
+enum ValidationStep {
+  before,
+  after,
+}
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -25,7 +29,6 @@ export class AppComponent implements OnInit {
   gridInfo: GridInfo;
   startCell: Cell;
   hidokuGrid: Cell[][] = [];
-  processGrid: Cell[][] = [];
 
   constructor(
     fb: FormBuilder,
@@ -80,6 +83,48 @@ export class AppComponent implements OnInit {
    */
   byBackTracking() {
     this.generateHidoku(BackTracking);
+  }
+
+  /**
+   * Resolve by BackTrackingSections algorithm
+   *
+   * @memberof AppComponent
+   */
+  async byBackTrackingSections() {
+    try {
+      this.validateGrid(ValidationStep.before);
+
+      const algorigthm = new BackTrackingSections(this.gridInfo, this.hidokuGrid);
+
+      this.hidokuGrid = await algorigthm.generateSolution();
+
+      this.validateGrid(ValidationStep.after);
+    } catch (error) {
+      // If validation error, show message to user
+      window.alert(error);
+    }
+  }
+
+  async generateEmptyHidoku() {
+    if (this.form.invalid) {
+      Object.values(this.form.controls)
+        .forEach((control) => {
+          control.markAsDirty();
+          control.markAsTouched();
+        });
+      this.formRef.ngSubmit.emit();
+      return;
+    }
+
+    this.gridInfo = new GridInfo({
+      rows: this.form.value.rows,
+      cols: this.form.value.cols,
+      dificulty: this.form.value.dificulty,
+    });
+
+    this.hidokuGrid = this.generateGrid(this.gridInfo)
+
+    this._loadingService.resolveAll('overlayStarSyntax');
   }
 
   /**
@@ -157,6 +202,16 @@ export class AppComponent implements OnInit {
       }
     }
     return processGrid;
+  }
+
+  validateGrid(step: ValidationStep) {
+    // Validate & setClue all cells not 0, first & last set Edge = true, return if correct
+
+    // Throw error if neccessary, depending on step
+    if (step === ValidationStep.before) {
+      throw "Borad Invalid";
+    }
+    throw "Borad has no solution";
   }
 
   /**
