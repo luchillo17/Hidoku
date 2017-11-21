@@ -1,13 +1,13 @@
 import { Move, GridInfo, Cell, Section } from './models';
 
 interface IRecursiveAlgorightm {
-  recursiveMove(cell: Cell, finalCell?: Cell);
+  recursiveMove(cell: Cell, finalCell?: Cell, clueNumber?: number);
   generateSolution(): Promise<Cell[][]>;
 }
 
 export class RecursiveAlgorightm implements IRecursiveAlgorightm {
   constructor(public gridInfo, public processGrid: Cell[][]) { }
-  recursiveMove(cell: Cell, finalCell?: Cell) {
+  recursiveMove(cell: Cell, finalCell?: Cell, clueNumber?: number) {
     throw new Error('Method not implemented.');
   }
   generateSolution(): Promise<Cell[][]> {
@@ -114,6 +114,7 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
 
   private allowedBaseMoves: Move[] = [];
   private allSections: Section[] = [];
+  private clues: Cell[] = [];
 
   constructor(public gridInfo: GridInfo, public processGrid: Cell[][]) {
     super(gridInfo, processGrid);
@@ -127,19 +128,36 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
     this.allowedBaseMoves.splice(4, 1);
   }
   async generateSolution(): Promise<Cell[][]> {
-    // Find all clues & order by number value
-
+      
+    
     // Generate all sections by ordered clues
+    for (let row of this.processGrid) {
+      for (let cell of row) {
+        if (cell.value != 0) {
+          this.clues.push(cell);
+        }
+      }
+    }
+
+    this.clues.sort ((cell1, cell2) => cell1.value - cell2.value);
 
     // Call recursiveMove with first section and wait until finshed
+    await this.recursiveMove (this.clues[0], this.clues[1], 0);
+
     return this.processGrid;
   }
 
-  async recursiveMove(cell, finalCell) {
+  async recursiveMove(cell:Cell, finalCell: Cell, clueNumber: number) {
     // Last base case is finalSection && cell == finalCell
-
+    if (clueNumber == (this.clues.length - 2) && cell.value === finalCell.value) {
+      return true;
+    }
     // General base case cell == finalCell, call recursiveMove(cell, nextFinalCell)
-
+    
+    if (cell.value === finalCell.value) {
+      const nextClueNumber = clueNumber + 1;
+      return await this.recursiveMove (cell, this.clues[nextClueNumber], nextClueNumber);
+    }
     // Get movesAllowed ordered on distance
     const movesAllowed = this.getAllowedMoves(cell, finalCell);
 
@@ -148,7 +166,7 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
       const dir = this.calculateMoveIndex(cell, allowedMove);
       const cellMove = this.processGrid[ dir.row ][ dir.col ];
       cellMove.value = cell.value + 1;
-      if (await this.recursiveMove(cellMove, finalCell)) {
+      if (await this.recursiveMove(cellMove, finalCell, clueNumber)) {
         return true;
       }
       cellMove.value = 0;
@@ -160,11 +178,55 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
   getAllowedMoves(cell: Cell, finalCell: Cell) {
     const allowedMoves: Move[] = [];
     // Get all moves that ends in a cell with 0
+    
+    for (const move of this.allowedBaseMoves) {
+      // Get move direction indexes
+      const dir = this.calculateMoveIndex(cell, move);
+
+      // Check table boundaries
+      if (
+        dir.row < 0 ||
+        dir.row > this.gridInfo.rowIndexes ||
+        dir.col < 0 ||
+        dir.col > this.gridInfo.colIndexes
+      ) continue;
+
+      // Check move cell is empty
+      const cellMove = this.processGrid[ dir.row ][ dir.col ];
+      if (cellMove.value !== 0) continue;
+
+      allowedMoves.push(move);
+    }
+
 
     // Order allowedMoves based on distance to finalCell
-      // Distance case: Number distance > block distance to finalCell, target far
-      // Distance case: Number distance < block distance to finalCell, target Only close
+    const numericDistance = finalCell.value - cell.value;
+    const blockDistance = this.distance(cell, finalCell);
+    const direction = numericDistance > blockDistance;
+
+    allowedMoves.sort((moveA, moveB) => {
+      const cellA = this.getCellAtMove(cell, moveA);
+      const cellB = this.getCellAtMove(cell, moveB);
+      const distanceA = this.distance(cellA, finalCell);
+      const distanceB = this.distance(cellB, finalCell);
+      if (direction) {
+        // Distance case: Number distance > block distance to finalCell, target far
+        return distanceB - distanceA;
+      } else {
+        // Distance case: Number distance < block distance to finalCell, target Only close
+        return distanceA - distanceB;
+      }
+    });
+
     return allowedMoves;
+  }
+
+  distance(cell: Cell, finalCell: Cell): number {
+    return Math.sqrt(Math.pow((finalCell.row - cell.row), 2) + Math.pow((finalCell.col - cell.col), 2));
+  }
+
+  getCellAtMove(cell: Cell, move: Move) {
+    return this.processGrid[ cell.row + move.row ][ cell.col + move.col ];
   }
 
   calculateMoveIndex(cell: Cell, move: Move) {
