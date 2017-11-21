@@ -206,10 +206,36 @@ export class AppComponent implements OnInit {
 
   validateGrid(step: ValidationStep) {
     // Validate & setClue all cells not 0, first & last set Edge = true, return if correct
+    let clues: number[] = [];
+    for (let row of this.hidokuGrid) {
+      for (let cell of row) {
+        if (cell.value == 0) {
+          continue;
+        }
+        let value = cell.value;
+        console.log("Validate value: " + value);
+        if (clues.includes(value)) {
+          throw "Repeated number";
+        }
+        clues.push(value);
+        if (value === 1 || value === this.gridInfo.quantity) {
+          cell.isEdge = true;
+        } else {
+          cell.isClue = true;
+        }
+      }
+    }
 
     // Throw error if neccessary, depending on step
     if (step === ValidationStep.before) {
-      throw "Borad Invalid";
+      if (!clues.includes(1) || !clues.includes(this.gridInfo.quantity)) {
+        throw "Board must have an start and an end";
+      }
+      return true;
+    }
+    //Validate all cells are not 0
+    if (clues.length == this.gridInfo.quantity) {
+      return true;
     }
     throw "Borad has no solution";
   }

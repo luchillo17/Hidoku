@@ -127,9 +127,8 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
     }
     this.allowedBaseMoves.splice(4, 1);
   }
+
   async generateSolution(): Promise<Cell[][]> {
-      
-    
     // Generate all sections by ordered clues
     for (let row of this.processGrid) {
       for (let cell of row) {
