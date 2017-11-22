@@ -92,15 +92,20 @@ export class AppComponent implements OnInit {
    */
   async byBackTrackingSections() {
     try {
-      
-
       const algorigthm = new BackTrackingSections(this.gridInfo, this.hidokuGrid);
 
-      if (this.validateGrid(ValidationStep.before)) {
-        this.hidokuGrid = await algorigthm.generateSolution();
-      }
+      performance.clearMeasures();
+      performance.mark('A');
+
+      this.validateGrid(ValidationStep.before);
+
+      this.hidokuGrid = await algorigthm.generateSolution();
 
       this.validateGrid(ValidationStep.after);
+
+      performance.mark('B');
+      performance.measure('A-B', 'A', 'B');
+
     } catch (error) {
       // If validation error, show message to user
       window.alert(error);
@@ -214,6 +219,10 @@ export class AppComponent implements OnInit {
         if (cell.value == 0) {
           continue;
         }
+        if (cell.value > this.gridInfo.quantity || cell.value < 0) {
+          throw "Board has invalid numbers";
+        }
+        
         let value = cell.value;
         if (clues.includes(value)) {
           throw "Repeated number";
@@ -242,7 +251,7 @@ export class AppComponent implements OnInit {
     }
     //Validate all cells are not 0
     if (clues.length == this.gridInfo.quantity) {
-      return false;
+      throw "Borad is complete";
     }
     throw "Borad has no solution";
   }
