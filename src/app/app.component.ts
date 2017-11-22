@@ -105,6 +105,9 @@ export class AppComponent implements OnInit {
 
       performance.mark('B');
       performance.measure('A-B', 'A', 'B');
+      console.log('====================================');
+      console.log(performance.getEntriesByName('A-B')[0]);
+      console.log('====================================');
 
     } catch (error) {
       // If validation error, show message to user
@@ -242,6 +245,9 @@ export class AppComponent implements OnInit {
 
     // Throw error if neccessary, depending on step
     if (step === ValidationStep.before) {
+      if (clues.length == this.gridInfo.quantity) {
+        throw "Board is complete";
+      }
       if (!clues.includes(1) || !clues.includes(this.gridInfo.quantity)) {
         throw "Board must have an start and an end";
       }
@@ -251,7 +257,7 @@ export class AppComponent implements OnInit {
     }
     //Validate all cells are not 0
     if (clues.length == this.gridInfo.quantity) {
-      throw "Borad is complete";
+      return true;
     }
     throw "Borad has no solution";
   }
