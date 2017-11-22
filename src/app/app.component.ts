@@ -92,11 +92,13 @@ export class AppComponent implements OnInit {
    */
   async byBackTrackingSections() {
     try {
-      this.validateGrid(ValidationStep.before);
+      
 
       const algorigthm = new BackTrackingSections(this.gridInfo, this.hidokuGrid);
 
-      this.hidokuGrid = await algorigthm.generateSolution();
+      if (this.validateGrid(ValidationStep.before)) {
+        this.hidokuGrid = await algorigthm.generateSolution();
+      }
 
       this.validateGrid(ValidationStep.after);
     } catch (error) {
@@ -213,15 +215,18 @@ export class AppComponent implements OnInit {
           continue;
         }
         let value = cell.value;
-        console.log("Validate value: " + value);
         if (clues.includes(value)) {
           throw "Repeated number";
         }
         clues.push(value);
         if (value === 1 || value === this.gridInfo.quantity) {
-          cell.isEdge = true;
+          if (step === ValidationStep.before) {
+            cell.isEdge = true;
+          }
         } else {
-          cell.isClue = true;
+          if (step === ValidationStep.before) {
+            cell.isClue = true;
+          }
         }
       }
     }
@@ -231,11 +236,13 @@ export class AppComponent implements OnInit {
       if (!clues.includes(1) || !clues.includes(this.gridInfo.quantity)) {
         throw "Board must have an start and an end";
       }
-      return true;
+      if (clues.length != this.gridInfo.quantity) {
+        return true;
+      }
     }
     //Validate all cells are not 0
     if (clues.length == this.gridInfo.quantity) {
-      return true;
+      return false;
     }
     throw "Borad has no solution";
   }

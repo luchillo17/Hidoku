@@ -141,24 +141,48 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
     this.clues.sort ((cell1, cell2) => cell1.value - cell2.value);
 
     // Call recursiveMove with first section and wait until finshed
-    await this.recursiveMove (this.clues[0], this.clues[1], 0);
+    await this.recursiveMove (this.clues[0], this.clues[1], 1);
 
     return this.processGrid;
   }
 
   async recursiveMove(cell:Cell, finalCell: Cell, clueNumber: number) {
-    // Last base case is finalSection && cell == finalCell
-    if (clueNumber == (this.clues.length - 2) && cell.value === finalCell.value) {
-      return true;
-    }
-    // General base case cell == finalCell, call recursiveMove(cell, nextFinalCell)
     
+    const numericDistance = finalCell.value - cell.value;
+    //Base case: cell has value number before finalCell number
+    if (numericDistance === 1) {
+      const filledMoves: Move[] = this.getCircundantFilledMoves (cell);
+      for (const allowedMove of filledMoves) {
+        const dir = this.calculateMoveIndex(cell, allowedMove);
+        const cellMove = this.processGrid[ dir.row ][ dir.col ];
+        if (cellMove.value === finalCell.value) {
+          const nextClueNumber = clueNumber + 1;
+          // Base Final Case, we do the last section and solved Hidato
+          if (nextClueNumber === this.clues.length) {
+            cell.showValue();
+            return true;
+          }
+          // Base Case2 cell has conection with finalCell but is not the last Section
+          if (await this.recursiveMove (cellMove, this.clues[nextClueNumber], nextClueNumber)) {
+            cell.showValue();
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    //Base case cell == finalCell do next section
+
     if (cell.value === finalCell.value) {
       const nextClueNumber = clueNumber + 1;
       return await this.recursiveMove (cell, this.clues[nextClueNumber], nextClueNumber);
     }
+    
     // Get movesAllowed ordered on distance
     const movesAllowed = this.getAllowedMoves(cell, finalCell);
+    
+    
 
     // BackTracking with distance management,
     for (const allowedMove of movesAllowed) {
@@ -166,13 +190,15 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
       const cellMove = this.processGrid[ dir.row ][ dir.col ];
       cellMove.value = cell.value + 1;
       if (await this.recursiveMove(cellMove, finalCell, clueNumber)) {
+        cell.showValue();
         return true;
       }
       cellMove.value = 0;
     }
-
+    cell.showValue();
     return false
   }
+
 
   getAllowedMoves(cell: Cell, finalCell: Cell) {
     const allowedMoves: Move[] = [];
@@ -234,6 +260,35 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
       col: cell.col + move.col,
     };
   }
+
+  getCircundantFilledMoves (cell: Cell) {
+    const allowedMoves: Move[] = [];
+    // Get all moves that ends in a cell with value diferent to 0
+    
+    for (const move of this.allowedBaseMoves) {
+      // Get move direction indexes
+      const dir = this.calculateMoveIndex(cell, move);
+
+      // Check table boundaries
+      if (
+        dir.row < 0 ||
+        dir.row > this.gridInfo.rowIndexes ||
+        dir.col < 0 ||
+        dir.col > this.gridInfo.colIndexes
+      ) continue;
+
+      // Check move cell is empty
+      const cellMove = this.processGrid[ dir.row ][ dir.col ];
+      if (cellMove.value == 0) continue;
+
+      allowedMoves.push(move);
+      
+    }
+    return allowedMoves;
+  }
+
+  
+
 }
 
 export class SpiralMatrix extends RecursiveAlgorightm implements IRecursiveAlgorightm {
