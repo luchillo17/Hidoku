@@ -149,26 +149,27 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
   async recursiveMove(cell:Cell, finalCell: Cell, clueNumber: number) {
     
     const numericDistance = finalCell.value - cell.value;
+    const blockDistance = Math.round(this.distance(cell, finalCell));
     //Base case: cell has value number before finalCell number
     if (numericDistance === 1) {
-      const filledMoves: Move[] = this.getCircundantFilledMoves (cell);
-      for (const allowedMove of filledMoves) {
-        const dir = this.calculateMoveIndex(cell, allowedMove);
-        const cellMove = this.processGrid[ dir.row ][ dir.col ];
-        if (cellMove.value === finalCell.value) {
-          const nextClueNumber = clueNumber + 1;
-          // Base Final Case, we do the last section and solved Hidato
-          if (nextClueNumber === this.clues.length) {
-            cell.showValue();
-            return true;
-          }
-          // Base Case2 cell has conection with finalCell but is not the last Section
-          if (await this.recursiveMove (cellMove, this.clues[nextClueNumber], nextClueNumber)) {
-            cell.showValue();
-            return true;
-          }
-        }
+      // If block distance is different than 1, this section is wrong and do backtracking
+      if (blockDistance !== 1) {
+        return false;
       }
+
+      // Base Final Case, we do the last section and solved Hidato
+      const nextClueNumber = clueNumber + 1;
+      if (nextClueNumber === this.clues.length) {
+        cell.showValue();
+        return true;
+      }
+
+      // Base Case2 cell has conection with finalCell but is not the last Section
+      if (await this.recursiveMove (finalCell, this.clues[nextClueNumber], nextClueNumber)) {
+        cell.showValue();
+        return true;
+      }
+
       return false;
     }
 
