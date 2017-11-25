@@ -261,35 +261,6 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
       col: cell.col + move.col,
     };
   }
-
-  getCircundantFilledMoves (cell: Cell) {
-    const allowedMoves: Move[] = [];
-    // Get all moves that ends in a cell with value diferent to 0
-    
-    for (const move of this.allowedBaseMoves) {
-      // Get move direction indexes
-      const dir = this.calculateMoveIndex(cell, move);
-
-      // Check table boundaries
-      if (
-        dir.row < 0 ||
-        dir.row > this.gridInfo.rowIndexes ||
-        dir.col < 0 ||
-        dir.col > this.gridInfo.colIndexes
-      ) continue;
-
-      // Check move cell is empty
-      const cellMove = this.processGrid[ dir.row ][ dir.col ];
-      if (cellMove.value == 0) continue;
-
-      allowedMoves.push(move);
-      
-    }
-    return allowedMoves;
-  }
-
-  
-
 }
 
 export class SpiralMatrix extends RecursiveAlgorightm implements IRecursiveAlgorightm {
