@@ -153,7 +153,7 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
     //Base case: cell has value number before finalCell number
     if (numericDistance === 1) {
       // If block distance is different than 1, this section is wrong and do backtracking
-      if (blockDistance !== 1) {
+      if (blockDistance > 1) {
         return false;
       }
 
@@ -174,7 +174,6 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
     }
 
     //Base case cell == finalCell do next section
-
     if (cell.value === finalCell.value) {
       const nextClueNumber = clueNumber + 1;
       return await this.recursiveMove (cell, this.clues[nextClueNumber], nextClueNumber);
@@ -182,8 +181,6 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
     
     // Get movesAllowed ordered on distance
     const movesAllowed = this.getAllowedMoves(cell, finalCell);
-    
-    
 
     // BackTracking with distance management,
     for (const allowedMove of movesAllowed) {
@@ -199,7 +196,6 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
     cell.showValue();
     return false
   }
-
 
   getAllowedMoves(cell: Cell, finalCell: Cell) {
     const allowedMoves: Move[] = [];
