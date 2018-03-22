@@ -1,13 +1,13 @@
 {
   "name": "hidoku",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "license": "MIT",
   "main": "dist/electron.js",
   "scripts": {
     "ng": "ng",
     "start": "webpack-dev-server --port=4200",
     "build": "webpack",
-    "electron": "./node_modules/.bin/electron dist/.",    
+    "electron": "./node_modules/.bin/electron dist/.",
     "test": "karma start ./karma.conf.js",
     "lint": "ng lint",
     "e2e": "protractor ./protractor.conf.js",
