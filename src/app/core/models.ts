@@ -32,7 +32,7 @@ export class GridInfo implements IGridInfo {
 }
 
 export class Move {
-  constructor(public row: number, public col: number) {}
+  constructor(public row: number, public col: number) { }
 }
 
 export class Cell {
@@ -45,7 +45,7 @@ export class Cell {
     public row = 0,
     public col = 0,
     public value = 0,
-  ) {}
+  ) { }
 
   get label() {
     if (!this.isShowValue) {
@@ -80,28 +80,28 @@ export class Cell {
 }
 
 export class Section {
-  constructor(public start: Cell, public end: Cell){}
+  constructor(public start: Cell, public end: Cell) { }
 }
 
 export const formErrors = [
   {
     name: 'required',
     text: 'Este campo es requerido',
-    rules: ['touched', 'dirty']
+    rules: [ 'touched', 'dirty' ]
   },
   {
     name: 'min',
     text: 'Este campo debe ser mayor o igual a 1',
-    rules: ['touched', 'dirty']
+    rules: [ 'touched', 'dirty' ]
   },
   {
     name: 'max',
     text: 'Este campo debe ser menor o igual a 3',
-    rules: ['touched', 'dirty']
+    rules: [ 'touched', 'dirty' ]
   },
   {
     name: 'pattern',
     text: 'Este campo debe ser numerico',
-    rules: ['touched', 'dirty']
+    rules: [ 'touched', 'dirty' ]
   },
 ];

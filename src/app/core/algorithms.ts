@@ -130,27 +130,27 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
 
   async generateSolution(): Promise<Cell[][]> {
     // Generate all sections by ordered clues
-    for (let row of this.processGrid) {
-      for (let cell of row) {
-        if (cell.value != 0) {
+    for (const row of this.processGrid) {
+      for (const cell of row) {
+        if (cell.value !== 0) {
           this.clues.push(cell);
         }
       }
     }
 
-    this.clues.sort ((cell1, cell2) => cell1.value - cell2.value);
+    this.clues.sort((cell1, cell2) => cell1.value - cell2.value);
 
     // Call recursiveMove with first section and wait until finshed
-    await this.recursiveMove (this.clues[0], this.clues[1], 1);
+    await this.recursiveMove(this.clues[ 0 ], this.clues[ 1 ], 1);
 
     return this.processGrid;
   }
 
-  async recursiveMove(cell:Cell, finalCell: Cell, clueNumber: number) {
-    
+  async recursiveMove(cell: Cell, finalCell: Cell, clueNumber: number) {
+
     const numericDistance = finalCell.value - cell.value;
     const blockDistance = Math.round(this.distance(cell, finalCell));
-    //Base case: cell has value number before finalCell number
+    // Base case: cell has value number before finalCell number
     if (numericDistance === 1) {
       // If block distance is different than 1, this section is wrong and do backtracking
       if (blockDistance > 1) {
@@ -165,7 +165,7 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
       }
 
       // Base Case2 cell has conection with finalCell but is not the last Section
-      if (await this.recursiveMove (finalCell, this.clues[nextClueNumber], nextClueNumber)) {
+      if (await this.recursiveMove(finalCell, this.clues[ nextClueNumber ], nextClueNumber)) {
         cell.showValue();
         return true;
       }
@@ -173,12 +173,12 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
       return false;
     }
 
-    //Base case cell == finalCell do next section
+    // Base case cell == finalCell do next section
     if (cell.value === finalCell.value) {
       const nextClueNumber = clueNumber + 1;
-      return await this.recursiveMove (cell, this.clues[nextClueNumber], nextClueNumber);
+      return await this.recursiveMove(cell, this.clues[ nextClueNumber ], nextClueNumber);
     }
-    
+
     // Get movesAllowed ordered on distance
     const movesAllowed = this.getAllowedMoves(cell, finalCell);
 
@@ -194,13 +194,13 @@ export class BackTrackingSections extends RecursiveAlgorightm implements IRecurs
       cellMove.value = 0;
     }
     cell.showValue();
-    return false
+    return false;
   }
 
   getAllowedMoves(cell: Cell, finalCell: Cell) {
     const allowedMoves: Move[] = [];
     // Get all moves that ends in a cell with 0
-    
+
     for (const move of this.allowedBaseMoves) {
       // Get move direction indexes
       const dir = this.calculateMoveIndex(cell, move);
@@ -282,7 +282,7 @@ export class GreedyMatrix extends RecursiveAlgorightm implements IRecursiveAlgor
     }
     this.allowedBaseMoves.splice(4, 1);
 
-    window['grid'] = this.processGrid;
+    window[ 'grid' ] = this.processGrid;
   }
   getRandomCell(differentCell?: Cell) {
     let cell: Cell;
