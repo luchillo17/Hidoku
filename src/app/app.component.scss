@@ -16,19 +16,24 @@
 
     > div#formContainer {
       display: flex;
-      justify-content: center;
       flex-wrap: wrap;
+      justify-content: center;
+
+      padding-bottom: 10px;
     }
   }
   #hidokuLoading {
+    max-width: 100%;
+    min-height: 100px;
     /deep/ .td-loading {
       display: flex;
+      min-width: 100px;
+      min-height: 100px;
       align-items: center;
       justify-content: center;
     }
 
     table {
-      display: flex;
       min-width: 100px;
       min-height: 100px;
       align-items: center;
@@ -45,7 +50,16 @@
           border-color: #8a0b08;
           background: #ef6c00;
         }
+        &.cellClue {
+          background: #1CEF00;
+        }
+        input {
+          width: 50px;
+        }
       }
     }
+  }
+  .saveButtons {
+    margin-top: 20px;
   }
 }

@@ -1,22 +1,34 @@
 import {TdLoadingService} from '@covalent/core';
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, NgForm } from '@angular/forms';
+import { flatMap } from 'lodash';
+import domtoimage from 'dom-to-image';
 
-import { Cell, formErrors, GridInfo, allowedBaseMoves, Move } from './core/models';
+import { Cell, formErrors, GridInfo, Move } from './core/models';
+import { BackTracking, BackTrackingSections, GreedyMatrix, RecursiveAlgorightm, SpiralMatrix } from './core/algorithms';
 
+enum ValidationStep {
+  before,
+  after,
+}
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
+  @ViewChild('formData')
+  formRef: NgForm;
+
+  @ViewChild('hidokuTable')
+  tableRef: ElementRef;
+
   form: FormGroup;
   errors = formErrors;
 
   gridInfo: GridInfo;
   startCell: Cell;
   hidokuGrid: Cell[][] = [];
-  processGrid: Cell[][] = [];
 
   constructor(
     fb: FormBuilder,
@@ -46,37 +58,144 @@ export class AppComponent implements OnInit {
     this._loadingService.register('overlayStarSyntax');
   }
 
-  async generateHidoku() {
+  /**
+   * Resolve by GreedyMatrix algorithm
+   *
+   * @memberof AppComponent
+   */
+  byGreedy() {
+    this.generateHidoku(GreedyMatrix);
+  }
+
+  /**
+   * Resolve by SpiralMatrix algorithm
+   *
+   * @memberof AppComponent
+   */
+  bySpiral() {
+    this.generateHidoku(SpiralMatrix);
+  }
+
+  /**
+   * Resolve by BackTracking algorithm
+   *
+   * @memberof AppComponent
+   */
+  byBackTracking() {
+    this.generateHidoku(BackTracking);
+  }
+
+  /**
+   * Resolve by BackTrackingSections algorithm
+   *
+   * @memberof AppComponent
+   */
+  async byBackTrackingSections() {
+    try {
+      const algorigthm = new BackTrackingSections(this.gridInfo, this.hidokuGrid);
+
+      performance.clearMeasures();
+      performance.mark('A');
+
+      this.validateGrid(ValidationStep.before);
+
+      this.hidokuGrid = await algorigthm.generateSolution();
+
+      this.validateGrid(ValidationStep.after);
+
+      performance.mark('B');
+      performance.measure('A-B', 'A', 'B');
+      console.log('====================================');
+      console.log(performance.getEntriesByName('A-B')[0]);
+      console.log('====================================');
+
+    } catch (error) {
+      // If validation error, show message to user
+      window.alert(error);
+    }
+  }
+
+  async generateEmptyHidoku() {
     if (this.form.invalid) {
+      Object.values(this.form.controls)
+        .forEach((control) => {
+          control.markAsDirty();
+          control.markAsTouched();
+        });
+      this.formRef.ngSubmit.emit();
+      return;
+    }
+
+    this.gridInfo = new GridInfo({
+      rows: this.form.value.rows,
+      cols: this.form.value.cols,
+      dificulty: this.form.value.dificulty,
+    });
+
+    this.hidokuGrid = this.generateGrid(this.gridInfo)
+
+    this._loadingService.resolveAll('overlayStarSyntax');
+  }
+
+  /**
+   * Generate hidoku board
+   *
+   * @param {typeof RecursiveAlgorightm} algorithmClass
+   * @returns
+   * @memberof AppComponent
+   */
+  async generateHidoku(algorithmClass: typeof RecursiveAlgorightm) {
+    if (this.form.invalid) {
+      Object.values(this.form.controls)
+        .forEach((control) => {
+          control.markAsDirty();
+          control.markAsTouched();
+        });
+      this.formRef.ngSubmit.emit();
       return;
     }
 
     this._loadingService.register('overlayStarSyntax');
 
-    this.gridInfo = new GridInfo({
-      rows: this.form.value.rows - 1,
-      cols: this.form.value.cols - 1,
+    performance.clearMeasures();
+    performance.mark('A');
+
+    const gridInfo = new GridInfo({
+      rows: this.form.value.rows,
+      cols: this.form.value.cols,
       dificulty: this.form.value.dificulty,
     });
 
-    console.time('generateHidoku');
+    try {
 
-    // Generates a matrix
-    this.generateGrid();
+      // Generates a matrix
+      let grid = this.generateGrid(gridInfo);
 
-    // Generates a valid solution
-    await this.generateSolution();
+      // Use selected algorith for generating the solution
+      const algorithm = new algorithmClass(gridInfo, grid);
 
-    // Hides cells based on dificulty
-    await this.setDifficulty();
+      // Generates a valid solution
+      grid = await algorithm.generateSolution();
 
-    this.hidokuGrid = this.processGrid;
+      // Hides cells based on dificulty
+      await this.setDifficulty(grid, gridInfo);
 
-    console.log('====================================');
-    console.timeEnd('generateHidoku');
-    console.log('====================================');
+      this.gridInfo = gridInfo;
+      this.hidokuGrid = grid;
 
-    this._loadingService.resolveAll('overlayStarSyntax');
+      performance.mark('B');
+      performance.measure('A-B', 'A', 'B');
+      console.log('====================================');
+      console.log(performance.getEntriesByName('A-B')[0]);
+      console.log('====================================');
+
+    } catch (error) {
+      console.log('====================================');
+      console.log('HP se rompio: ', error);
+      console.log('====================================');
+    } finally {
+      this._loadingService.resolveAll('overlayStarSyntax');
+    }
   }
 
   /**
@@ -84,106 +203,110 @@ export class AppComponent implements OnInit {
    *
    * @memberof AppComponent
    */
-  generateGrid() {
-    this.processGrid = [];
-    for (let row = 0; row <= this.gridInfo.rows; row++) {
-      this.processGrid[row] = [];
-      for (let col = 0; col <= this.gridInfo.cols; col++) {
-        this.processGrid[row][col] = new Cell(row, col);
+  generateGrid(gridInfo: GridInfo) {
+    const processGrid: Cell[][] = [];
+    for (let row = 0; row <= gridInfo.rowIndexes; row++) {
+      processGrid[row] = [];
+      for (let col = 0; col <= gridInfo.colIndexes; col++) {
+        processGrid[row][col] = new Cell(row, col);
       }
     }
+    return processGrid;
   }
 
-    /**
-     * Backtracking part of the app, generates the
-     * hidoku values for a valid solution.
-     *
-     * @memberof AppComponent
-     */
-  async generateSolution() {
-    // Get random starting cell positions
-    const randomCol = Math.round(Math.random() * this.gridInfo.cols);
-    const randomRow = Math.round(Math.random() * this.gridInfo.rows);
-
-    // Get starting cell
-    this.startCell = this.processGrid[randomRow][randomCol];
-
-    // Initialize starting cell
-    this.startCell.value = 1;
-    this.startCell.isEdge = true;
-    this.startCell.showValue();
-
-    await this.recursiveMove(this.startCell);
-  }
-
-  private async recursiveMove(cell: Cell) {
-    if (cell.value === this.gridInfo.quantity) {
-      cell.isEdge = true;
-      cell.showValue();
-      return true;
+  validateGrid(step: ValidationStep) {
+    // Validate & setClue all cells not 0, first & last set Edge = true, return if correct
+    let clues: number[] = [];
+    for (let row of this.hidokuGrid) {
+      for (let cell of row) {
+        if (cell.value == 0) {
+          continue;
+        }
+        if (cell.value > this.gridInfo.quantity || cell.value < 0) {
+          throw "Board has invalid numbers";
+        }
+        
+        let value = cell.value;
+        if (clues.includes(value)) {
+          throw "Repeated number";
+        }
+        clues.push(value);
+        if (value === 1 || value === this.gridInfo.quantity) {
+          if (step === ValidationStep.before) {
+            cell.isEdge = true;
+          }
+        } else {
+          if (step === ValidationStep.before) {
+            cell.isClue = true;
+          }
+        }
+      }
     }
 
-    const movesAllowed = this.getAllowedMoves(cell);
-
-    while (movesAllowed.length !== 0) {
-      const moveIndex = Math.round(Math.random() * (movesAllowed.length - 1));
-      const allowedMove = movesAllowed.splice(moveIndex, 1)[0];
-      const dir = this.calculateMoveIndex(cell, allowedMove);
-      const cellMove = this.processGrid[dir.row][dir.col];
-      cellMove.value = cell.value + 1;
-      if (await this.recursiveMove(cellMove)) {
-        cell.showValue();
+    // Throw error if neccessary, depending on step
+    if (step === ValidationStep.before) {
+      if (clues.length == this.gridInfo.quantity) {
+        throw "Board is complete";
+      }
+      if (!clues.includes(1) || !clues.includes(this.gridInfo.quantity)) {
+        throw "Board must have an start and an end";
+      }
+      if (clues.length != this.gridInfo.quantity) {
         return true;
       }
-      cellMove.value = 0;
     }
-    return false;
+    //Validate all cells are not 0
+    if (clues.length == this.gridInfo.quantity) {
+      return true;
+    }
+    throw "Borad has no solution";
   }
 
   /**
    * Hides some cells based on the dificulty level.
    *
+   * @param {GridInfo} gridInfo
    * @memberof AppComponent
    */
-  async setDifficulty() {
+  async setDifficulty(grid: Cell[][], gridInfo: GridInfo) {
+    const dificultyPercentage = (70 - (gridInfo.dificulty * 10)) / 100;
+    const toShow = Math.round(gridInfo.rows * gridInfo.cols * dificultyPercentage);
+    gridInfo.clues = toShow;
+    for (let i = 0; i < toShow; i++) {
+      const row = Math.round(Math.random() * gridInfo.rowIndexes);
+      const col = Math.round(Math.random() * gridInfo.rowIndexes);
 
-  }
-
-  /**
-   * Verify which moves are allowed from the cell passed as parameter
-   *
-   * @param {Cell} cell
-   * @returns
-   * @memberof AppComponent
-   */
-  getAllowedMoves(cell: Cell) {
-    const allowedMoves: Move[] = [];
-    for (const move of allowedBaseMoves) {
-      // Get move direction indexes
-      const dir = this.calculateMoveIndex(cell, move);
-
-      // Check table boundaries
-      if (
-        dir.row < 0 ||
-        dir.row > this.gridInfo.rows ||
-        dir.col < 0 ||
-        dir.col > this.gridInfo.cols
-      ) continue;
-
-      // Check move cell is empty
-      const cellMove = this.processGrid[dir.row][dir.col];
-      if (cellMove.value !== 0) continue;
-
-      allowedMoves.push(move);
+      grid[row][col]
+        .showValue()
+        .isClue = true;
     }
-
-    return allowedMoves;
   }
 
-  calculateMoveIndex(cell: Cell, move: Move) {
-    return {
-      row: cell.row + move.row,
-      col: cell.col + move.col,
-    };
+  saveTxt() {
+    const matrixCells: Cell[] = flatMap(this.hidokuGrid, (row) => row.filter((cell) => cell.isShowValue));
+
+    const textLines = [
+      `${this.gridInfo.rows} ${this.gridInfo.cols} ${this.gridInfo.dificulty} ${this.gridInfo.clues}`,
+      ...matrixCells.map(cell => `${cell.row} ${cell.col} ${cell.value}`),
+      `${(performance.getEntriesByName('A-B')[0].duration / 1000).toFixed(4)}`,
+    ].join('\n');
+
+    // tslint:disable-next-line:quotemark
+    const text = `data: text/plain; charset=utf-8,${encodeURI(textLines)}`;
+
+    const link = document.createElement('a');
+    link.setAttribute('href', text);
+    link.setAttribute('download', `hidoku.txt`);
+    link.click();
+  }
+
+  async savePng() {
+    const hidoku: HTMLTableElement = this.tableRef.nativeElement;
+    const text = await domtoimage.toPng(hidoku);
+
+    const link = document.createElement('a');
+    link.setAttribute('href', text);
+    link.setAttribute('download', `hidoku.png`);
+    link.click();
   }
 }

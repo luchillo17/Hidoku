@@ -2,7 +2,7 @@
   <span>Hidoku</span>
 </md-toolbar>
 
-<form [formGroup]='form' (ngSubmit)='generateHidoku()'>
+<form #formData='ngForm' [formGroup]='form'>
   <div id='formContainer'>
     <md-form-field>
       <label>Filas</label>
@@ -35,25 +35,81 @@
     </md-form-field>
   </div>
 
-  <button
-    md-raised-button
-    color="primary"
-    type="submit"
-  >Submit</button>
+  <div>
+    <button
+      md-raised-button
+      color="primary"
+      type="submit"
+      (click)="generateEmptyHidoku()"
+    >Empty board</button>
+
+    <button
+      md-raised-button
+      color="primary"
+      type="submit"
+      (click)="byGreedy()"
+    >Greedy Algorithm</button>
+
+<!--
+    <button
+      md-raised-button
+      color="primary"
+      type="submit"
+      (click)="bySpiral()"
+    >Spiral Algorithm</button>
+-->
+    <button
+      md-raised-button
+      color="primary"
+      type="submit"
+      (click)="byBackTracking()"
+    >BackTracking Algorithm</button>
+
+    <button
+      md-raised-button
+      color="primary"
+      type="submit"
+      (click)="byBackTrackingSections()"
+    >Solve Hidoku</button>
+
+  </div>
 </form>
 
 <div id="hidokuLoading">
   <div *tdLoading="'overlayStarSyntax'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
 
-    <table>
+    <table #hidokuTable>
       <tr *ngFor="let rows of hidokuGrid">
         <td
           *ngFor="let cell of rows"
-          [ngClass]="{'cellEdge': cell.isEdge}"
+          [ngClass]="{'cellEdge': cell.isEdge, 'cellClue': !cell.isEdge && cell.readOnly}"
         >
-          {{ cell.label }}
+          <div>
+            <input
+              type='number'
+              [value]='cell.label'
+              [readonly]='cell.readOnly || cell.isEdge'
+              (input)='cell.setValue($event)'
+            >
+          </div>
+          <!-- {{ cell.label }} -->
         </td>
       </tr>
     </table>
   </div>
+</div>
+
+<div class='saveButtons'>
+  <button
+    md-raised-button
+    color="primary"
+    type="submit"
+    (click)="saveTxt()"
+  >Save as txt</button>
+  <button
+    md-raised-button
+    color="primary"
+    type="submit"
+    (click)="savePng()"
+  >Save as png</button>
 </div>
