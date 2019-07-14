@@ -34,7 +34,7 @@
     "dom-to-image": "^2.5.2",
     "electron": "^1.7.8",
     "electron-packager": "^10.1.0",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.13",
     "rxjs": "^5.4.2",
     "zone.js": "^0.8.14"
   },
